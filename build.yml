@@ -1,0 +1,98 @@
+name: Build E-Library apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate platform folders
+        run: |
+          flutter create --platforms=android --project-name e_library --org com.elibrary .
+          rm -f test/widget_test.dart
+      - name: Allow internet access in release builds
+        run: |
+          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
+      - run: flutter pub get
+      - name: Patch Android build for newer Gradle
+        run: |
+          # opt out of the AGP 9 "new DSL" until Flutter plugins support it
+          echo "android.newDsl=false" >> android/gradle.properties
+          # some plugins still declare jcenter(), which Gradle no longer provides
+          for f in "$HOME"/.pub-cache/hosted/pub.dev/*/android/build.gradle; do
+            [ -f "$f" ] && sed -i 's/jcenter()/mavenCentral()/g' "$f"
+          done
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e-library-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate platform folders
+        shell: bash
+        run: |
+          flutter create --platforms=windows --project-name e_library --org com.elibrary .
+          rm -f test/widget_test.dart
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e-library-windows
+          path: build/windows/x64/runner/Release
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate platform folders
+        run: |
+          flutter create --platforms=web --project-name e_library --org com.elibrary .
+          rm -f test/widget_test.dart
+      - run: flutter pub get
+      - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e-library-web
+          path: build/web
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy-web:
+    needs: web
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

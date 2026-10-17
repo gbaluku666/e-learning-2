@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-Library Admin</title>
+<style>
+:root{--bg1:#eef0ff;--bg2:#dcd6ff;--card:rgba(255,255,255,.72);--bd:rgba(255,255,255,.9);--tx:#1d1b3a;--mut:#6b6990;--pri:#6c5ce7;--pri2:#9b59f6;--ok:#16a34a;--bad:#e11d48;--in:rgba(255,255,255,.9);--sh:0 10px 30px rgba(108,92,231,.18)}
+[data-theme=dark]{--bg1:#0f0c29;--bg2:#302b63;--card:rgba(255,255,255,.07);--bd:rgba(255,255,255,.12);--tx:#ecebff;--mut:#a3a0c9;--in:rgba(255,255,255,.08);--sh:0 10px 30px rgba(0,0,0,.4)}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tx);min-height:100vh;background:linear-gradient(135deg,var(--bg1),var(--bg2));background-size:200% 200%;animation:bg 14s ease infinite}
+@keyframes bg{0%,100%{background-position:0 0}50%{background-position:100% 100%}}
+button,input,select{font:inherit;color:inherit}
+.btn{border:0;cursor:pointer;padding:12px 22px;border-radius:14px;color:#fff;font-weight:600;background:linear-gradient(135deg,var(--pri),var(--pri2));box-shadow:0 8px 18px rgba(108,92,231,.35);transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 12px 26px rgba(108,92,231,.5)}
+.btn:active{transform:scale(.95)}
+.btn.sm{padding:7px 14px;border-radius:10px;font-size:13px}
+.btn.ghost{background:var(--in);color:var(--tx);box-shadow:none;border:1px solid var(--bd)}
+.btn.bad{background:linear-gradient(135deg,#e11d48,#fb7185)}
+.btn:disabled{opacity:.6;cursor:wait}
+input,select{width:100%;padding:13px 16px;border-radius:14px;border:1px solid var(--bd);background:var(--in);outline:none;transition:box-shadow .2s}
+input:focus,select:focus{box-shadow:0 0 0 3px rgba(108,92,231,.35)}
+label{display:block;font-size:13px;color:var(--mut);margin:12px 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:22px;padding:22px;backdrop-filter:blur(14px);box-shadow:var(--sh);animation:rise .45s both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.login{max-width:420px;margin:12vh auto;padding:0 16px}
+.login h1{margin:0 0 4px;font-size:28px}
+.mut{color:var(--mut);font-size:14px}
+.shell{display:flex;min-height:100vh}
+.side{width:230px;padding:20px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.side .logo{font-size:20px;font-weight:800;padding:8px 12px 18px;background:linear-gradient(135deg,var(--pri),var(--pri2));-webkit-background-clip:text;color:transparent}
+.nav{padding:13px 16px;border-radius:14px;cursor:pointer;transition:all .2s;display:flex;gap:10px;align-items:center}
+.nav:hover{background:var(--in);transform:translateX(4px)}
+.nav.on{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;box-shadow:0 8px 18px rgba(108,92,231,.35)}
+.main{flex:1;padding:24px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap}
+.top h2{margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.stat{padding:20px;border-radius:20px;background:var(--card);border:1px solid var(--bd);transition:transform .2s}
+.stat:hover{transform:translateY(-4px)}
+.stat b{font-size:34px;display:block;background:linear-gradient(135deg,var(--pri),var(--pri2));-webkit-background-clip:text;color:transparent}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--bd);font-size:14px}
+th{color:var(--mut);font-weight:600}
+tr:hover td{background:var(--in)}
+details{background:var(--in);border:1px solid var(--bd);border-radius:16px;margin:8px 0;padding:6px 14px;transition:all .2s}
+details details{margin-left:10px}
+summary{cursor:pointer;padding:9px 0;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 0}
+.row .grow{flex:1;min-width:140px}
+.pill{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--in);border:1px solid var(--bd)}
+.pill.ok{color:var(--ok)}.pill.no{color:var(--bad)}
+.modalbg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.modal{background:var(--bg1);border:1px solid var(--bd);border-radius:22px;padding:24px;width:min(460px,100%);max-height:90vh;overflow:auto;animation:rise .3s}
+[data-theme=dark] .modal{background:#1a1740}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:14px;background:#222;color:#fff;z-index:99;animation:rise .3s}
+.spacer{flex:1}
+@media(max-width:800px){.shell{flex-direction:column}.side{width:100%;height:auto;position:static;flex-direction:row;overflow:auto}.side .logo{display:none}.nav{white-space:nowrap}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} }, del(k){ try{localStorage.removeItem(k)}catch(e){} } };
+const S = { token: '', user: null, view: 'overview', tree: null, tutors: [], allocs: [] };
+document.documentElement.setAttribute('data-theme', ls.get('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+
+function call(action, payload) {
+  return new Promise((res, rej) => {
+    google.script.run
+      .withSuccessHandler(r => {
+        if (r && r.ok) res(r.data);
+        else { if (r && r.code === 'AUTH') { logout(true); } rej(new Error((r && r.error) || 'Error')); }
+      })
+      .withFailureHandler(e => rej(new Error(e.message || 'Network error')))
+      .api(action, Object.assign({ token: S.token }, payload || {}));
+  });
+}
+function toast(m) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 3200); }
+async function run(btn, fn) {
+  if (btn) btn.disabled = true;
+  try { await fn(); } catch (e) { toast(e.message); } finally { if (btn) btn.disabled = false; }
+}
+function modal(title, body, okLabel, onOk) {
+  const bg = document.createElement('div'); bg.className = 'modalbg';
+  bg.innerHTML = `<div class="modal"><h3 style="margin-top:0">${esc(title)}</h3>${body}<div class="row" style="margin-top:18px;justify-content:flex-end"><button class="btn ghost" id="mc">Cancel</button>${okLabel ? '<button class="btn" id="mo">' + esc(okLabel) + '</button>' : ''}</div></div>`;
+  document.body.appendChild(bg);
+  bg.querySelector('#mc').onclick = () => bg.remove();
+  const mo = bg.querySelector('#mo');
+  if (mo) mo.onclick = () => run(mo, async () => { await onOk(bg); bg.remove(); });
+  return bg;
+}
+const val = (bg, id) => bg.querySelector('#' + id).value.trim();
+
+/* ---------------------------------------------------------------- auth */
+function renderLogin() {
+  $('#app').innerHTML = `<div class="login"><div class="card">
+    <h1>📚 E-Library</h1><p class="mut">Administrator sign in</p>
+    <label>Email</label><input id="em" type="email" autocomplete="username">
+    <label>Password</label><input id="pw" type="password" autocomplete="current-password">
+    <div class="row" style="margin-top:18px"><button class="btn grow" id="go">Sign in</button></div>
+    <p style="text-align:center"><a href="#" id="fg" style="color:var(--pri)">Forgot password?</a></p>
+  </div></div>`;
+  const go = () => run($('#go'), async () => {
+    const r = await call('login', { email: $('#em').value, password: $('#pw').value, role: 'admin' });
+    S.token = r.token; S.user = r.user; renderShell();
+  });
+  $('#go').onclick = go;
+  $('#pw').onkeydown = e => { if (e.key === 'Enter') go(); };
+  $('#fg').onclick = e => { e.preventDefault(); forgot(); };
+}
+function forgot() {
+  modal('Reset password', '<p class="mut">We will email a 6-digit verification code.</p><label>Admin email</label><input id="fe" type="email">', 'Send code', async bg => {
+    const email = val(bg, 'fe');
+    await call('requestReset', { email });
+    setTimeout(() => modal('Enter code', '<label>Verification code</label><input id="fc"><label>New password</label><input id="fp" type="password">', 'Reset', async b2 => {
+      await call('confirmReset', { email, code: val(b2, 'fc'), newPassword: b2.querySelector('#fp').value });
+      toast('Password updated. Sign in with it.');
+    }), 50);
+  });
+}
+function logout(expired) { S.token = ''; S.user = null; if (expired) toast('Session expired'); renderLogin(); }
+function toggleTheme() {
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t); ls.set('theme', t);
+}
+
+/* --------------------------------------------------------------- shell */
+const NAV = [['overview','🏠','Overview'],['library','📖','Library'],['tutors','🎓','Tutors'],['students','👥','Students'],['vouchers','🎟️','Vouchers'],['settings','⚙️','Settings']];
+function renderShell() {
+  $('#app').innerHTML = `<div class="shell"><aside class="side"><div class="logo">📚 E-Library</div>
+    ${NAV.map(n => `<div class="nav ${S.view === n[0] ? 'on' : ''}" data-v="${n[0]}"><span>${n[1]}</span>${n[2]}</div>`).join('')}
+    <div class="spacer"></div><div class="nav" id="th">🌓 Theme</div><div class="nav" id="lo">🚪 Sign out</div></aside>
+    <main class="main" id="main"></main></div>`;
+  document.querySelectorAll('.nav[data-v]').forEach(n => n.onclick = () => { S.view = n.dataset.v; renderShell(); });
+  $('#th').onclick = toggleTheme; $('#lo').onclick = () => logout();
+  views[S.view]();
+}
+const main = html => { $('#main').innerHTML = html; };
+const header = (t, extra) => `<div class="top"><h2>${t}</h2><div class="row">${extra || ''}</div></div>`;
+
+/* cache-first loader (stale-while-revalidate via localStorage) */
+async function swr(key, action, paint) {
+  const c = ls.get('c_' + key);
+  if (c) { try { paint(JSON.parse(c)); } catch (e) { } }
+  try { const d = await call(action); ls.set('c_' + key, JSON.stringify(d)); paint(d); return d; } catch (e) { if (!c) toast(e.message); }
+}
+
+const views = {
+  overview() {
+    main(header('Overview') + '<div class="grid" id="st"></div>');
+    swr('stats', 'stats', d => {
+      $('#st').innerHTML = [['Programs', d.programs], ['Course units', d.units], ['Topics', d.topics], ['Tutors', d.tutors], ['Students', d.students], ['Active vouchers', d.vouchers]]
+        .map(x => `<div class="stat"><b>${x[1]}</b>${x[0]}</div>`).join('');
+    });
+  },
+
+  library() {
+    main(header('Library', '<button class="btn" id="ap">+ Program</button>') + '<div id="lib"></div>');
+    $('#ap').onclick = () => modal('New program', '<label>Program name</label><input id="n" placeholder="Certificate in Nursing"><label>Number of semesters (2 per year)</label><input id="s" type="number" min="1" max="20" value="4">', 'Create', async bg => {
+      await call('addProgram', { name: val(bg, 'n'), semesters: val(bg, 's') }); ls.del('c_tree'); views.library();
+    });
+    swr('tree', 'tree', t => { S.tree = t; $('#lib').innerHTML = t.programs.length ? t.programs.map(libProgram).join('') : '<div class="card mut">No programs yet. Create one to get started.</div>'; });
+  },
+
+  tutors() {
+    main(header('Tutors', '<button class="btn" id="at">+ Tutor</button>') + '<div class="card"><div id="tt">Loading…</div></div>');
+    $('#at').onclick = () => modal('New tutor', '<label>Full name</label><input id="n"><label>Email</label><input id="e" type="email"><label>Initial password</label><input id="p" type="text">', 'Create', async bg => {
+      await call('addTutor', { name: val(bg, 'n'), email: val(bg, 'e'), password: val(bg, 'p') }); views.tutors();
+    });
+    Promise.all([call('listTutors'), call('listAllocations'), call('tree')]).then(([tu, al, tree]) => {
+      S.tutors = tu; S.allocs = al; S.tree = tree;
+      $('#tt').innerHTML = tu.length ? `<table><tr><th>Name</th><th>Email</th><th>Allocated units</th><th></th></tr>${tu.map(t => `<tr><td>${esc(t.name)}</td><td>${esc(t.email)}</td><td>${al.filter(a => a.tutorId === t.id).length}</td>
+        <td class="row"><button class="btn sm" onclick="allocUI('${t.id}')">Allocate</button><button class="btn sm ghost" onclick="resetPw('${t.id}')">Reset password</button><button class="btn sm bad" onclick="delTutor('${t.id}')">Delete</button></td></tr>`).join('')}</table>` : '<span class="mut">No tutors yet.</span>';
+    }).catch(e => toast(e.message));
+  },
+
+  students() {
+    main(header('Students') + '<div class="card"><div id="sd">Loading…</div></div>');
+    swr('students', 'adminStudents', d => {
+      const f = t => t ? new Date(Number(t)).toLocaleString() : '-';
+      $('#sd').innerHTML = d.length ? `<table><tr><th>Name</th><th>Device ID</th><th>Voucher</th><th>First seen</th><th>Last seen</th><th>Logins</th></tr>${d.map(s => `<tr><td>${esc(s.name || '—')}</td><td title="${esc(s.id)}">${esc(String(s.id).slice(0, 8))}…</td><td>${esc(s.voucher)}</td><td>${f(s.firstSeen)}</td><td>${f(s.lastSeen)}</td><td>${esc(s.logins)}</td></tr>`).join('')}</table>` : '<span class="mut">No students have used the app yet.</span>';
+    });
+  },
+
+  vouchers() {
+    main(header('Vouchers', '<button class="btn" id="nv">+ New voucher</button>') + '<div class="card"><p class="mut" style="margin-top:0">Students sign in with an active voucher. A new voucher does not disconnect anyone. Deactivating one asks its students for a new code — their progress is kept on their device.</p><div id="vl">Loading…</div></div>');
+    $('#nv').onclick = e => run(e.target, async () => { await call('newVoucher'); toast('Voucher created'); views.vouchers(); });
+    call('listVouchers').then(v => {
+      $('#vl').innerHTML = `<table><tr><th>Code</th><th>Status</th><th>Created</th><th></th></tr>${v.map(x => `<tr><td><b style="letter-spacing:1px">${esc(x.code)}</b></td><td><span class="pill ${x.active === true ? 'ok' : 'no'}">${x.active === true ? 'Active' : 'Deactivated'}</span></td><td>${new Date(Number(x.createdAt)).toLocaleDateString()}</td>
+        <td class="row"><button class="btn sm ghost" onclick="copyCode('${esc(x.code)}')">Copy</button><button class="btn sm ${x.active === true ? 'bad' : ''}" onclick="setV('${x.id}',${x.active === true ? 'false' : 'true'})">${x.active === true ? 'Deactivate' : 'Activate'}</button></td></tr>`).join('')}</table>`;
+    }).catch(e => toast(e.message));
+  },
+
+  settings() {
+    main(header('Settings') + `<div class="card" style="max-width:480px"><h3 style="margin-top:0">Change password</h3>
+      <label>Current password</label><input id="o" type="password"><label>New password</label><input id="n" type="password">
+      <div class="row" style="margin-top:16px"><button class="btn" id="cp">Update password</button></div></div>
+      <div class="card" style="max-width:480px;margin-top:14px"><h3 style="margin-top:0">Appearance</h3><button class="btn ghost" onclick="toggleTheme()">Toggle light / dark</button></div>`);
+    $('#cp').onclick = e => run(e.target, async () => { await call('changePassword', { oldPassword: $('#o').value, newPassword: $('#n').value }); toast('Password changed'); $('#o').value = ''; $('#n').value = ''; });
+  }
+};
+
+/* ------------------------------------------------------ library renderers */
+const fmt = b => { b = Number(b) || 0; return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; };
+function libProgram(p) {
+  return `<details open><summary>🎓 ${esc(p.name)} <span class="pill">${p.semesters.length} semesters</span><span class="spacer"></span><button class="btn sm bad" onclick="event.preventDefault();delProgram('${p.id}')">Delete</button></summary>
+  ${p.semesters.map(s => `<details><summary>📅 ${esc(s.name)} <span class="pill">${s.units.length} units</span><span class="spacer"></span><button class="btn sm" onclick="event.preventDefault();addUnitUI('${s.id}')">+ Course unit</button></summary>
+    ${s.units.map(u => `<details><summary>📘 ${esc(u.code)} ${esc(u.name)} <span class="pill">${u.topics.length} topics</span><span class="spacer"></span>
+      <button class="btn sm" onclick="event.preventDefault();addTopicUI('${u.id}')">+ Topic</button>
+      <button class="btn sm ghost" onclick="event.preventDefault();editUnitUI('${u.id}')">Edit</button>
+      <button class="btn sm bad" onclick="event.preventDefault();delUnit('${u.id}')">Delete</button></summary>
+      ${u.topics.map(t => `<div class="row">📄 <span class="grow">${esc(t.title)} ${t.hasFile ? `<span class="pill">${esc(t.ext)} · ${fmt(t.size)}</span>` : ''} ${t.videoUrl ? '<span class="pill">▶ video</span>' : ''}</span>
+        <button class="btn sm ghost" onclick="editTopicUI('${t.id}')">Edit</button><button class="btn sm bad" onclick="delTopic('${t.id}')">Delete</button></div>`).join('') || '<div class="mut row">No topics yet</div>'}
+    </details>`).join('') || '<div class="mut row">No course units yet</div>'}
+  </details>`).join('')}</details>`;
+}
+const refreshLib = () => { ls.del('c_tree'); views.library(); };
+const confirmDo = (msg, fn) => modal('Are you sure?', `<p>${esc(msg)}</p>`, 'Yes, delete', async () => { await fn(); });
+function findUnit(id) { for (const p of S.tree.programs) for (const s of p.semesters) for (const u of s.units) if (u.id === id) return u; }
+function findTopic(id) { for (const p of S.tree.programs) for (const s of p.semesters) for (const u of s.units) for (const t of u.topics) if (t.id === id) return t; }
+
+function addUnitUI(semId) {
+  modal('New course unit', '<label>Code</label><input id="c" placeholder="NUR101"><label>Name</label><input id="n" placeholder="Anatomy &amp; Physiology">', 'Add', async bg => { await call('addUnit', { semesterId: semId, name: val(bg, 'n'), code: val(bg, 'c') }); refreshLib(); });
+}
+function editUnitUI(id) {
+  const u = findUnit(id);
+  modal('Edit course unit', `<label>Code</label><input id="c" value="${esc(u.code)}"><label>Name</label><input id="n" value="${esc(u.name)}">`, 'Save', async bg => { await call('updateUnit', { id, name: val(bg, 'n'), code: val(bg, 'c') }); refreshLib(); });
+}
+function delUnit(id) { confirmDo('Delete this course unit with all its topics and files?', async () => { await call('deleteUnit', { id }); refreshLib(); }); }
+function delProgram(id) { confirmDo('Delete this program with everything inside it?', async () => { await call('deleteProgram', { id }); refreshLib(); }); }
+function delTopic(id) { confirmDo('Delete this topic and its file?', async () => { await call('deleteTopic', { id }); refreshLib(); }); }
+
+function addTopicUI(unitId) {
+  const bg = modal('New topic', `<label>Topic title</label><input id="t">
+    <label>File (.pdf, .docx, .xlsx, .pptx …) — compressed automatically</label><input id="f" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg">
+    <div class="mut" id="fi" style="margin-top:6px"></div>
+    <label>Support video URL (YouTube, optional)</label><input id="v" placeholder="https://www.youtube.com/watch?v=…">`, 'Upload', async b => {
+    const f = b.querySelector('#f').files[0];
+    const payload = { unitId, title: val(b, 't'), videoUrl: val(b, 'v') };
+    if (f) {
+      if (f.size > 25 * 1048576) throw new Error('File too large (max 25 MB)');
+      const z = await gzip(f);
+      payload.b64 = z.b64; payload.fileName = f.name; payload.origSize = f.size;
+      toast(`Compressed ${fmt(f.size)} → ${fmt(z.size)}`);
+    }
+    await call('addTopic', payload); refreshLib();
+  });
+  bg.querySelector('#f').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const z = await gzip(f); bg.querySelector('#fi').textContent = `Compression: ${fmt(f.size)} → ${fmt(z.size)}`;
+  };
+}
+function editTopicUI(id) {
+  const t = findTopic(id);
+  modal('Edit topic', `<label>Title</label><input id="t" value="${esc(t.title)}"><label>Support video URL</label><input id="v" value="${esc(t.videoUrl)}">`, 'Save', async bg => { await call('updateTopic', { id, title: val(bg, 't'), videoUrl: val(bg, 'v') }); refreshLib(); });
+}
+
+/* gzip compressor (browser-native) */
+async function gzip(file) {
+  const buf = await new Response(file.stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+  const bytes = new Uint8Array(buf); let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return { b64: btoa(s), size: bytes.length };
+}
+
+/* ---------------------------------------------------------- tutor / voucher */
+function allocUI(tutorId) {
+  const opts = [];
+  S.tree.programs.forEach(p => p.semesters.forEach(s => s.units.forEach(u => opts.push([u.id, `${p.name} › ${s.name} › ${u.code} ${u.name}`]))));
+  const mine = S.allocs.filter(a => a.tutorId === tutorId);
+  const label = id => (opts.find(o => o[0] === id) || [0, '(removed unit)'])[1];
+  modal('Allocate course unit', `<label>Course unit</label><select id="u">${opts.map(o => `<option value="${o[0]}">${esc(o[1])}</option>`).join('')}</select>
+    <h4>Current allocations</h4>${mine.map(a => `<div class="row"><span class="grow">${esc(label(a.unitId))}</span><button class="btn sm bad" onclick="unalloc('${a.id}')">Remove</button></div>`).join('') || '<span class="mut">None</span>'}`,
+    opts.length ? 'Allocate' : '', async bg => { await call('allocate', { tutorId, unitId: bg.querySelector('#u').value }); views.tutors(); });
+}
+async function unalloc(id) { try { await call('unallocate', { id }); toast('Removed'); document.querySelector('.modalbg')?.remove(); views.tutors(); } catch (e) { toast(e.message); } }
+function resetPw(id) { modal('Reset tutor password', '<label>New password</label><input id="p" type="text">', 'Reset', async bg => { await call('resetTutorPassword', { id, password: val(bg, 'p') }); toast('Password reset'); }); }
+function delTutor(id) { confirmDo('Delete this tutor account?', async () => { await call('deleteTutor', { id }); views.tutors(); }); }
+async function setV(id, active) { try { await call('setVoucher', { id, active }); views.vouchers(); } catch (e) { toast(e.message); } }
+function copyCode(c) { navigator.clipboard && navigator.clipboard.writeText(c); toast('Copied ' + c); }
+
+renderLogin();
+</script>
+</body>
+</html>
